@@ -4,14 +4,12 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
-    <!-- RecyclerView (ocupa todo el espacio excepto el FAB) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_users"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="72dp" /> <!-- Espacio para el FAB y BottomNavigation -->
+        android:paddingBottom="72dp" />
 
-    <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_user"
         android:layout_width="wrap_content"

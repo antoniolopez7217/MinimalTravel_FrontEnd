@@ -1,9 +1,7 @@
 package com.example.minimaltravel.ui;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -103,16 +101,23 @@ public class UsersFragment extends Fragment {
             String username = etUsername.getText().toString().trim();
             String email = etEmail.getText().toString().trim();
 
-            if (!username.isEmpty()) {
-                createNewUser(username, email);
-            } else {
+            if (username.isEmpty()) {
                 showToast("El nombre de usuario es obligatorio");
+            } else if (!isValidEmail(email)) {
+                showToast("El email no es válido");
+            } else {
+                createNewUser(username, email);
             }
         });
 
         builder.setNegativeButton("Cancelar", null);
         builder.show();
     }
+
+    private boolean isValidEmail(String email) {
+        return email.isEmpty() || android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
 
     private void createNewUser(String username, String email) {
         UserApi api = ApiClient.getClient().create(UserApi.class);
@@ -182,6 +187,11 @@ public class UsersFragment extends Fragment {
     }
 
     private void updateUser(User user, String newUsername, String newEmail) {
+        if (!isValidEmail(newEmail)) {
+            showToast("El email no es válido");
+            return;
+        }
+
         UserApi api = ApiClient.getClient().create(UserApi.class);
         user.setuserName(newUsername);
         user.setmail(newEmail);

@@ -45,7 +45,7 @@ public class TasksFragment extends Fragment {
     private List<Task> taskList;
     private FloatingActionButton fabAddTask;
     private MenuItem menuFilterItem;
-    private String currentFilter = "All";
+    private String currentFilter = "Pending";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
