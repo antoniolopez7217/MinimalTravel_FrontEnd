@@ -1,14 +1,11 @@
 package com.example.minimaltravel.model;
 
-import java.util.Date;
 
 public class Task {
+
     private Long taskId; // Primary key
-
     private String description;
-
     private String creationDate;
-
     private String status; // Accepted values: "Pending", "Done", "Deleted"
 
     // Getters and setters
