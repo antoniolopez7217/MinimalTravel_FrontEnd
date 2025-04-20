@@ -12,6 +12,8 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.minimaltravel.R;
 import com.example.minimaltravel.model.Task;
+import com.example.minimaltravel.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +30,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     private List<Task> tasks;
     private TaskActionListener actionListener;
+    private List<User> userList; // NUEVO: lista de usuarios para el spinner
 
     // Interfaz única para todas las acciones de tarea
     public interface TaskActionListener {
@@ -36,8 +40,10 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         void onDescriptionChange(Task task);
     }
 
-    public TaskAdapter(List<Task> tasks, TaskActionListener actionListener) {
+    // NUEVO: el constructor ahora recibe también la lista de usuarios
+    public TaskAdapter(List<Task> tasks, List<User> userList, TaskActionListener actionListener) {
         this.tasks = tasks != null ? tasks : new ArrayList<>();
+        this.userList = userList != null ? userList : new ArrayList<>();
         this.actionListener = actionListener;
     }
 
@@ -53,7 +59,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         Task task = tasks.get(position);
         holder.textDescription.setText(task.getDescription());
-        holder.textStatus.setText(task.getStatus());
+        holder.textUser.setText(task.getAssignedUserName() != null ? task.getAssignedUserName() : "Sin asignar");
 
         holder.buttonMoreOptions.setOnClickListener(v -> showPopupMenu(v, task, position));
 
@@ -83,18 +89,51 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         popup.show();
     }
 
+    // MODIFICADO: ahora permite editar descripción y usuario asignado
     private void showEditDialog(Context context, Task task, int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Edit Task");
+        builder.setTitle("Editar Tarea");
 
-        final EditText input = new EditText(context);
+        // Usa un layout personalizado con EditText y Spinner
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_task, null);
+        EditText input = dialogView.findViewById(R.id.et_task_description);
+        Spinner spinner = dialogView.findViewById(R.id.spinner_users);
+
         input.setText(task.getDescription());
-        builder.setView(input);
 
-        builder.setPositiveButton("Save", (dialog, which) -> {
+        // Prepara la lista de nombres de usuario
+        List<String> userNames = new ArrayList<>();
+        userNames.add("Sin asignar");
+        for (User user : userList) userNames.add(user.getuserName());
+
+        ArrayAdapter<String> adapterSpinner = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, userNames);
+        adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapterSpinner);
+
+        // Selecciona el usuario actual en el Spinner
+        int selectedIndex = 0;
+        if (task.getAssignedUserId() != null) {
+            for (int i = 0; i < userList.size(); i++) {
+                if (userList.get(i).getUserId().equals(task.getAssignedUserId())) {
+                    selectedIndex = i + 1; // +1 por "Sin asignar"
+                    break;
+                }
+            }
+        }
+        spinner.setSelection(selectedIndex);
+
+        builder.setView(dialogView);
+
+        builder.setPositiveButton("Guardar", (dialog, which) -> {
             String newDescription = input.getText().toString().trim();
+            int selectedPosition = spinner.getSelectedItemPosition();
+            Long assignedUserId = (selectedPosition > 0) ? userList.get(selectedPosition - 1).getUserId() : null;
+            String assignedUserName = (selectedPosition > 0) ? userList.get(selectedPosition - 1).getuserName() : null;
+
             if (!newDescription.isEmpty()) {
                 task.setDescription(newDescription);
+                task.setAssignedUserId(assignedUserId);
+                task.setAssignedUserName(assignedUserName);
                 notifyItemChanged(position);
                 if (actionListener != null) {
                     actionListener.onDescriptionChange(task);
@@ -102,7 +141,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             }
         });
 
-        builder.setNegativeButton("Cancel", null);
+        builder.setNegativeButton("Cancelar", null);
         builder.show();
     }
 
@@ -158,15 +197,21 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         notifyDataSetChanged();
     }
 
+    // NUEVO: permite actualizar la lista de usuarios si cambia
+    public void updateUserList(List<User> newUsers) {
+        this.userList = newUsers != null ? newUsers : new ArrayList<>();
+        notifyDataSetChanged();
+    }
+
     static class TaskViewHolder extends RecyclerView.ViewHolder {
-        TextView textDescription, textStatus;
+        TextView textDescription, textUser;
         ImageButton buttonAction, buttonMoreOptions;
         CheckBox checkBoxDone;
 
         public TaskViewHolder(@NonNull View itemView) {
             super(itemView);
             textDescription = itemView.findViewById(R.id.text_task_description);
-            textStatus = itemView.findViewById(R.id.text_task_status);
+            textUser = itemView.findViewById(R.id.text_task_user);
             buttonAction = itemView.findViewById(R.id.button_action_task);
             checkBoxDone = itemView.findViewById(R.id.checkbox_task_done);
             buttonMoreOptions = itemView.findViewById(R.id.button_more_options);

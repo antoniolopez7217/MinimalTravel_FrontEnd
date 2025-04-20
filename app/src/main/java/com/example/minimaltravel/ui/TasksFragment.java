@@ -9,8 +9,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.PopupMenu;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,7 +26,9 @@ import com.example.minimaltravel.R;
 import com.example.minimaltravel.adapter.TaskAdapter;
 import com.example.minimaltravel.api.ApiClient;
 import com.example.minimaltravel.api.TaskApi;
+import com.example.minimaltravel.api.UserApi;
 import com.example.minimaltravel.model.Task;
+import com.example.minimaltravel.model.User;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
@@ -46,11 +50,12 @@ public class TasksFragment extends Fragment {
     private FloatingActionButton fabAddTask;
     private MenuItem menuFilterItem;
     private String currentFilter = "Pending";
+    private List<User> userList = new ArrayList<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true); // Permite que el fragmento tenga su propio menú de opciones
+        setHasOptionsMenu(true);
     }
 
     @Nullable
@@ -58,7 +63,6 @@ public class TasksFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // Infla el layout del fragmento
         return inflater.inflate(R.layout.fragment_task, container, false);
     }
 
@@ -67,6 +71,7 @@ public class TasksFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         initRecyclerView(view);
         initFab(view);
+        fetchUsers(); // Ahora se cargan los usuarios antes de mostrar el diálogo
         fetchTasks();
     }
 
@@ -75,7 +80,9 @@ public class TasksFragment extends Fragment {
         recyclerViewTasks = view.findViewById(R.id.recycler_view_tasks);
         recyclerViewTasks.setLayoutManager(new LinearLayoutManager(requireContext()));
         taskList = new ArrayList<>();
-        adapter = new TaskAdapter(taskList, new TaskAdapter.TaskActionListener() {
+
+        // Pasa la lista de usuarios (vacía al principio) y actualízala después
+        adapter = new TaskAdapter(taskList, userList, new TaskAdapter.TaskActionListener() {
             @Override
             public void onTaskDelete(Task task) { updateTaskStatusAndRefresh(task, "Deleted", "Tarea eliminada", "Error al eliminar tarea"); }
             @Override
@@ -85,13 +92,61 @@ public class TasksFragment extends Fragment {
             @Override
             public void onDescriptionChange(Task task) { updateTaskStatusAndRefresh(task, task.getStatus(), "Descripción actualizada", "Error al actualizar descripción"); }
         });
+
         recyclerViewTasks.setAdapter(adapter);
     }
 
     // Inicializa el botón flotante para añadir tareas
     private void initFab(View view) {
         fabAddTask = view.findViewById(R.id.fab_add_task);
-        fabAddTask.setOnClickListener(v -> showAddTaskDialog());
+        fabAddTask.setOnClickListener(v -> {
+            if (userList.isEmpty()) {
+                fetchUsersAndShowDialog();
+            } else {
+                showAddTaskDialog();
+            }
+        });
+    }
+
+    // Carga usuarios y muestra el diálogo solo cuando estén listos
+    private void fetchUsersAndShowDialog() {
+        UserApi api = ApiClient.getClient().create(UserApi.class);
+        api.getAllUsers().enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    userList.clear();
+                    userList.addAll(response.body());
+                    adapter.updateUserList(userList);
+                    showAddTaskDialog();
+                } else {
+                    showToast("Error al cargar usuarios");
+                }
+            }
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                showToast("Error al cargar usuarios");
+            }
+        });
+    }
+
+    // Carga usuarios y actualiza el adapter (para edición y creación)
+    private void fetchUsers() {
+        UserApi api = ApiClient.getClient().create(UserApi.class);
+        api.getAllUsers().enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    userList.clear();
+                    userList.addAll(response.body());
+                    if (adapter != null) adapter.updateUserList(userList);
+                }
+            }
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                showToast("Error al cargar usuarios");
+            }
+        });
     }
 
     // Infla el menú y guarda la referencia al ítem de filtro
@@ -131,7 +186,6 @@ public class TasksFragment extends Fragment {
     // Filtra las tareas por estado y actualiza el icono del filtro
     private void filterTasksByStatus(String status) {
         currentFilter = status;
-
         if (menuFilterItem != null) {
             menuFilterItem.setIcon(!status.equals("All") ? R.drawable.ic_filter_list_active : R.drawable.ic_filter_list_default);
         }
@@ -141,17 +195,34 @@ public class TasksFragment extends Fragment {
         adapter.updateData(filteredTasks);
     }
 
-    // Muestra el diálogo para añadir una nueva tarea
+    // Muestra el diálogo para añadir una nueva tarea (con Spinner de usuarios)
     private void showAddTaskDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Nueva Tarea");
-        final EditText input = new EditText(requireContext());
-        input.setHint("Descripción de la tarea");
-        builder.setView(input);
+
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_task, null);
+        EditText input = dialogView.findViewById(R.id.et_task_description);
+        Spinner spinner = dialogView.findViewById(R.id.spinner_users);
+
+        // Prepara la lista de nombres de usuario
+        List<String> userNames = new ArrayList<>();
+        userNames.add("Sin asignar"); // Opción por defecto
+        for (User user : userList) userNames.add(user.getuserName());
+
+        ArrayAdapter<String> adapterSpinner = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, userNames);
+        adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapterSpinner);
+
+        builder.setView(dialogView);
+
         builder.setPositiveButton("Guardar", (dialog, which) -> {
             String taskDescription = input.getText().toString().trim();
+            int selectedPosition = spinner.getSelectedItemPosition();
+            Long assignedUserId = (selectedPosition > 0) ? userList.get(selectedPosition - 1).getUserId() : null;
+            String assignedUserName = (selectedPosition > 0) ? userList.get(selectedPosition - 1).getuserName() : null;
+
             if (!taskDescription.isEmpty()) {
-                createNewTask(taskDescription);
+                createNewTask(taskDescription, assignedUserId, assignedUserName);
             } else {
                 showToast("La descripción no puede estar vacía");
             }
@@ -171,22 +242,20 @@ public class TasksFragment extends Fragment {
     }
 
     // Crea una nueva tarea y la añade a la lista
-    private void createNewTask(String description) {
+    private void createNewTask(String description, Long assignedUserId, String assignedUserName) {
         TaskApi api = ApiClient.getClient().create(TaskApi.class);
         Task newTask = new Task();
         newTask.setDescription(description);
         newTask.setStatus("Pending");
         newTask.setCreationDate(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
+        newTask.setAssignedUserId(assignedUserId);
+        newTask.setAssignedUserName(assignedUserName);
 
         api.createTask(newTask).enqueue(new Callback<Task>() {
             @Override
             public void onResponse(Call<Task> call, Response<Task> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    taskList.add(response.body());
                     fetchTasks();
-                    sortTasksByStatus();
-                    adapter.notifyDataSetChanged();
-                    recyclerViewTasks.smoothScrollToPosition(taskList.size() - 1);
                     showToast("Tarea creada");
                 } else {
                     showToast("Error al crear tarea");
@@ -194,7 +263,6 @@ public class TasksFragment extends Fragment {
             }
             @Override
             public void onFailure(Call<Task> call, Throwable t) {
-                Log.e("API Error", t.getMessage());
                 showToast("Error de conexión");
             }
         });

@@ -41,7 +41,7 @@
                     android:textSize="16sp"/>
 
                 <TextView
-                    android:id="@+id/text_task_status"
+                    android:id="@+id/text_task_user"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textSize="12sp"

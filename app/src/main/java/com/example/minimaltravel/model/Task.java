@@ -7,14 +7,12 @@ public class Task {
     private String description;
     private String creationDate;
     private String status; // Accepted values: "Pending", "Done", "Deleted"
+    private Long assignedUserId;
+    private String assignedUserName;
 
     // Getters and setters
     public Long getTaskId() {
         return taskId;
-    }
-
-    public void setTaskId(Long taskId) {
-        this.taskId = taskId;
     }
 
     public String getDescription() {
@@ -40,4 +38,11 @@ public class Task {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public Long getAssignedUserId() { return assignedUserId; }
+
+    public void setAssignedUserId(Long assignedUserId) { this.assignedUserId = assignedUserId; }
+    public String getAssignedUserName() { return assignedUserName; }
+
+    public void setAssignedUserName(String assignedUserName) { this.assignedUserName = assignedUserName; }
 }
