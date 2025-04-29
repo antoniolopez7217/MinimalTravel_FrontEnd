@@ -19,7 +19,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="16dp"
-        android:contentDescription="Add tasks"
+        android:contentDescription="Añadir tarea"
         android:src="@drawable/ic_add"
         app:backgroundTint="#CCEBF4" />
 

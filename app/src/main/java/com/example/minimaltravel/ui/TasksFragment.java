@@ -1,7 +1,6 @@
 package com.example.minimaltravel.ui;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -49,7 +48,7 @@ public class TasksFragment extends Fragment {
     private List<Task> taskList;
     private FloatingActionButton fabAddTask;
     private MenuItem menuFilterItem;
-    private String currentFilter = "Pending";
+    private String currentFilter = "Pendiente";
     private List<User> userList = new ArrayList<>();
 
     @Override
@@ -84,9 +83,9 @@ public class TasksFragment extends Fragment {
         // Pasa la lista de usuarios (vacía al principio) y actualízala después
         adapter = new TaskAdapter(taskList, userList, new TaskAdapter.TaskActionListener() {
             @Override
-            public void onTaskDelete(Task task) { updateTaskStatusAndRefresh(task, "Deleted", "Tarea eliminada", "Error al eliminar tarea"); }
+            public void onTaskDelete(Task task) { updateTaskStatusAndRefresh(task, "Eliminado", "Tarea eliminada", "Error al eliminar tarea"); }
             @Override
-            public void onTaskUndo(Task task) { updateTaskStatusAndRefresh(task, "Pending", "Tarea restaurada", "Error al restaurar tarea"); }
+            public void onTaskUndo(Task task) { updateTaskStatusAndRefresh(task, "Pendiente", "Tarea restaurada", "Error al restaurar tarea"); }
             @Override
             public void onStatusChange(Task task) { updateTaskStatusAndRefresh(task, task.getStatus(), "Estado actualizado", "Error al actualizar estado"); }
             @Override
@@ -172,10 +171,10 @@ public class TasksFragment extends Fragment {
     private void showFilterPopup(View anchorView) {
         PopupMenu popup = new PopupMenu(requireContext(), anchorView);
         popup.setGravity(Gravity.END);
-        popup.getMenu().add("All");
-        popup.getMenu().add("Pending");
-        popup.getMenu().add("Done");
-        popup.getMenu().add("Deleted");
+        popup.getMenu().add("Todos");
+        popup.getMenu().add("Pendiente");
+        popup.getMenu().add("Completado");
+        popup.getMenu().add("Eliminado");
         popup.setOnMenuItemClickListener(menuItem -> {
             filterTasksByStatus(menuItem.getTitle().toString());
             return true;
@@ -187,9 +186,9 @@ public class TasksFragment extends Fragment {
     private void filterTasksByStatus(String status) {
         currentFilter = status;
         if (menuFilterItem != null) {
-            menuFilterItem.setIcon(!status.equals("All") ? R.drawable.ic_filter_list_active : R.drawable.ic_filter_list_default);
+            menuFilterItem.setIcon(!status.equals("Todos") ? R.drawable.ic_filter_list_active : R.drawable.ic_filter_list_default);
         }
-        List<Task> filteredTasks = status.equals("All")
+        List<Task> filteredTasks = status.equals("Todos")
                 ? new ArrayList<>(taskList)
                 : taskList.stream().filter(task -> task.getStatus().equals(status)).collect(Collectors.toList());
         adapter.updateData(filteredTasks);
@@ -234,8 +233,8 @@ public class TasksFragment extends Fragment {
     // Ordena las tareas por estado: Pending > Done > Deleted
     private void sortTasksByStatus() {
         taskList.sort((task1, task2) -> {
-            if (task1.getStatus().equals("Pending") && !task2.getStatus().equals("Pending")) return -1;
-            if (task1.getStatus().equals("Done") && task2.getStatus().equals("Deleted")) return -1;
+            if (task1.getStatus().equals("Pendiente") && !task2.getStatus().equals("Pendiente")) return -1;
+            if (task1.getStatus().equals("Completado") && task2.getStatus().equals("Eliminado")) return -1;
             if (task1.getStatus().equals(task2.getStatus())) return 0;
             return 1;
         });
@@ -246,7 +245,7 @@ public class TasksFragment extends Fragment {
         TaskApi api = ApiClient.getClient().create(TaskApi.class);
         Task newTask = new Task();
         newTask.setDescription(description);
-        newTask.setStatus("Pending");
+        newTask.setStatus("Pendiente");
         newTask.setCreationDate(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
         newTask.setAssignedUserId(assignedUserId);
         newTask.setAssignedUserName(assignedUserName);

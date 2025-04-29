@@ -102,7 +102,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             if (!newUserName.isEmpty()) {
                 actionListener.onUserUpdate(user, newUserName, newMail);
             } else {
-                Toast.makeText(context, "El username es obligatorio", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "El usuario es obligatorio", Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton("Cancelar", null);

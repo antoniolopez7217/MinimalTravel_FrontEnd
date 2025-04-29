@@ -55,7 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:background="@android:color/transparent"
-                android:contentDescription="More options"
+                android:contentDescription="Más opciones"
                 android:src="@drawable/ic_more_vert" />
 
             <ImageButton
@@ -64,7 +64,7 @@
                 android:layout_height="48dp"
                 android:src="@drawable/ic_delete"
                 android:background="@android:color/transparent"
-                android:contentDescription="Delete user"
+                android:contentDescription="Borrar usuario"
                 android:paddingStart="8dp"/>
         </LinearLayout>
     </LinearLayout>

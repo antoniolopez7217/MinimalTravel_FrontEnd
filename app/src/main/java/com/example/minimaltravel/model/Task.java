@@ -6,7 +6,7 @@ public class Task {
     private Long taskId; // Primary key
     private String description;
     private String creationDate;
-    private String status; // Accepted values: "Pending", "Done", "Deleted"
+    private String status; // Accepted values: "Pendiente", "Completado", "Eliminado"
     private Long assignedUserId;
     private String assignedUserName;
 

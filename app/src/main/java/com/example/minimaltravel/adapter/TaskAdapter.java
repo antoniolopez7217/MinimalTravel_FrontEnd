@@ -64,9 +64,9 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         holder.buttonMoreOptions.setOnClickListener(v -> showPopupMenu(v, task, position));
 
         holder.checkBoxDone.setOnCheckedChangeListener(null);
-        holder.checkBoxDone.setChecked(task.getStatus().equals("Done"));
+        holder.checkBoxDone.setChecked(task.getStatus().equals("Completado"));
         holder.checkBoxDone.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            task.setStatus(isChecked ? "Done" : "Pending");
+            task.setStatus(isChecked ? "Completado" : "Pendiente");
             if (actionListener != null) {
                 actionListener.onStatusChange(task);
             }
@@ -154,21 +154,21 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         View.OnClickListener actionListener;
 
         switch (task.getStatus()) {
-            case "Pending":
+            case "Pendiente":
                 typeface = Typeface.BOLD;
                 paintFlags = holder.textDescription.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG;
                 textColor = Color.BLACK;
                 iconRes = R.drawable.ic_delete;
                 actionListener = v -> this.actionListener.onTaskDelete(task);
                 break;
-            case "Done":
+            case "Completado":
                 typeface = Typeface.ITALIC;
                 paintFlags = holder.textDescription.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG;
                 textColor = Color.BLACK;
                 iconRes = R.drawable.ic_delete;
                 actionListener = v -> this.actionListener.onTaskDelete(task);
                 break;
-            case "Deleted":
+            case "Eliminado":
                 typeface = Typeface.NORMAL;
                 paintFlags = holder.textDescription.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG;
                 textColor = Color.RED;
