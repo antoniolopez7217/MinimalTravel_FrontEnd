@@ -1,0 +1,70 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Descripción del gasto -->
+        <EditText
+            android:id="@+id/et_transaction_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Descripción del gasto"/>
+
+        <!-- Importe -->
+        <EditText
+            android:id="@+id/et_transaction_amount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Importe (€)"
+            android:inputType="numberDecimal"
+            android:layout_marginTop="12dp"/>
+
+        <!-- Categoría -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Categoría"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"/>
+        <Spinner
+            android:id="@+id/spinner_transaction_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"/>
+
+        <!-- Usuario que paga -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="¿Quién paga?"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"/>
+        <Spinner
+            android:id="@+id/spinner_creditor_user"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"/>
+
+        <!-- Participantes (checkboxes) -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Selecciona los participantes"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"/>
+
+        <!-- Aquí se añadirán los checkboxes dinámicamente desde código -->
+        <LinearLayout
+            android:id="@+id/layout_participants_checkboxes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+</ScrollView>

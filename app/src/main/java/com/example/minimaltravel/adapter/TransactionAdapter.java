@@ -44,9 +44,41 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         Transaction transaction = transactions.get(position);
 
         holder.textTransactionDescription.setText(transaction.getDescription());
-        holder.textTransactionParticipants.setText(transaction.getCreditorUserName());
-        holder.textTransactionAmounts
-                .setText(String.format("%s€  ", transaction.getAmount()));
+        holder.textTransactionCategory.setText(
+                new Object() {
+                    String withIcon(String category) {
+                        switch (category) {
+                            case "Comida": return "🍔 Comida";
+                            case "Transporte": return "🚌 Transporte";
+                            case "Ocio": return "🎉 Ocio";
+                            case "Ropa": return "👕 Ropa";
+                            case "Cultura": return "🎬 Cultura";
+                            case "Alojamiento": return "🏨 Alojamiento";
+                            case "Compras": return "🛒 Compras";
+                            case "Actividades": return "🏕️ Actividades";
+                            case "Otros": return "🧩 Otros";
+                            default: return category;
+                        }
+                    }
+                }.withIcon(transaction.getCategory()));
+        holder.textTransactionCreditor.setText(String.format("%s pagó  (📅%s)",
+                transaction.getCreditorUserName(),
+                transaction.getCreationDate()));
+
+        List<Transaction.Participant> participants = transaction.getParticipants();
+        List<String> participantNames = new ArrayList<>();
+        if (participants != null) {
+            for (Transaction.Participant p : participants) {
+                if (p.getUserName() != null) {
+                    participantNames.add(p.getUserName());
+                }
+            }
+        }
+
+        String participantNamesString = String.join(", ", participantNames);
+        String message = "Participantes: " + participantNamesString;
+        holder.textTransactionParticipants.setText(message);
+        holder.textTransactionAmounts.setText(String.format("%s€  ", transaction.getAmount()));
 
         // Configurar clic en el botón de opciones (menú contextual)
        // holder.buttonMoreOptions.setOnClickListener(v ->
@@ -77,13 +109,15 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
     }
 
     static class TransactionViewHolder extends RecyclerView.ViewHolder {
-        TextView textTransactionDescription, textTransactionParticipants, textTransactionAmounts;
+        TextView textTransactionDescription, textTransactionCreditor, textTransactionCategory, textTransactionParticipants, textTransactionAmounts;
         ImageButton buttonAction, buttonMoreOptions;
 
         public TransactionViewHolder(@NonNull View itemView) {
             super(itemView);
 
             textTransactionDescription = itemView.findViewById(R.id.text_transaction_description);
+            textTransactionCategory = itemView.findViewById(R.id.text_transaction_category);
+            textTransactionCreditor = itemView.findViewById(R.id.text_transaction_creditor);
             textTransactionParticipants = itemView.findViewById(R.id.text_transaction_participants);
             textTransactionAmounts = itemView.findViewById(R.id.text_transaction_amount);
             buttonAction = itemView.findViewById(R.id.button_action_transaction);
