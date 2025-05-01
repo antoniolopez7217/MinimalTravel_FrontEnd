@@ -43,17 +43,25 @@ import retrofit2.Response;
 
 public class TasksFragment extends Fragment {
 
+    // RecyclerView para mostrar la lista de tareas
     private RecyclerView recyclerViewTasks;
+    // Adaptador para conectar los datos de tareas con la vista
     private TaskAdapter adapter;
+    // Lista de tareas en memoria
     private List<Task> taskList;
+    // Botón flotante para añadir nuevas tareas
     private FloatingActionButton fabAddTask;
+    // Referencia al ítem de menú de filtro
     private MenuItem menuFilterItem;
+    // Estado actual del filtro de tareas (por defecto, "Pendiente")
     private String currentFilter = "Pendiente";
+    // Lista de usuarios disponibles para asignar tareas
     private List<User> userList = new ArrayList<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Indica que este fragmento tiene su propio menú de opciones
         setHasOptionsMenu(true);
     }
 
@@ -62,43 +70,59 @@ public class TasksFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        // Infla el layout del fragmento
         return inflater.inflate(R.layout.fragment_task, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // Inicializa el RecyclerView y su adaptador
         initRecyclerView(view);
+        // Inicializa el botón flotante para añadir tareas
         initFab(view);
-        fetchUsers(); // Ahora se cargan los usuarios antes de mostrar el diálogo
+        // Carga la lista de usuarios (para asignar tareas)
+        fetchUsers();
+        // Carga la lista de tareas desde el backend
         fetchTasks();
     }
 
-    // Inicializa el RecyclerView y su adaptador
+    // Inicializa el RecyclerView y configura el adaptador
     private void initRecyclerView(View view) {
         recyclerViewTasks = view.findViewById(R.id.recycler_view_tasks);
         recyclerViewTasks.setLayoutManager(new LinearLayoutManager(requireContext()));
         taskList = new ArrayList<>();
-
-        // Pasa la lista de usuarios (vacía al principio) y actualízala después
+        // Crea el adaptador, pasando la lista de tareas, usuarios y el listener de acciones
         adapter = new TaskAdapter(taskList, userList, new TaskAdapter.TaskActionListener() {
             @Override
-            public void onTaskDelete(Task task) { updateTaskStatusAndRefresh(task, "Eliminado", "Tarea eliminada", "Error al eliminar tarea"); }
+            public void onTaskDelete(Task task) {
+                // Marca la tarea como "Eliminado" y actualiza en backend
+                updateTaskStatusAndRefresh(task, "Eliminado", "Tarea eliminada", "Error al eliminar tarea");
+            }
             @Override
-            public void onTaskUndo(Task task) { updateTaskStatusAndRefresh(task, "Pendiente", "Tarea restaurada", "Error al restaurar tarea"); }
+            public void onTaskUndo(Task task) {
+                // Restaura la tarea a "Pendiente" y actualiza en backend
+                updateTaskStatusAndRefresh(task, "Pendiente", "Tarea restaurada", "Error al restaurar tarea");
+            }
             @Override
-            public void onStatusChange(Task task) { updateTaskStatusAndRefresh(task, task.getStatus(), "Estado actualizado", "Error al actualizar estado"); }
+            public void onStatusChange(Task task) {
+                // Cambia el estado de la tarea (Pendiente/Completado) y actualiza en backend
+                updateTaskStatusAndRefresh(task, task.getStatus(), "Estado actualizado", "Error al actualizar estado");
+            }
             @Override
-            public void onDescriptionChange(Task task) { updateTaskStatusAndRefresh(task, task.getStatus(), "Descripción actualizada", "Error al actualizar descripción"); }
+            public void onDescriptionChange(Task task) {
+                // Cambia la descripción de la tarea y actualiza en backend
+                updateTaskStatusAndRefresh(task, task.getStatus(), "Descripción actualizada", "Error al actualizar descripción");
+            }
         });
-
         recyclerViewTasks.setAdapter(adapter);
     }
 
-    // Inicializa el botón flotante para añadir tareas
+    // Inicializa el FloatingActionButton para añadir tareas
     private void initFab(View view) {
         fabAddTask = view.findViewById(R.id.fab_add_task);
         fabAddTask.setOnClickListener(v -> {
+            // Si la lista de usuarios está vacía, la carga antes de mostrar el diálogo
             if (userList.isEmpty()) {
                 fetchUsersAndShowDialog();
             } else {
@@ -107,7 +131,7 @@ public class TasksFragment extends Fragment {
         });
     }
 
-    // Carga usuarios y muestra el diálogo solo cuando estén listos
+    // Carga los usuarios y muestra el diálogo para añadir tarea solo cuando estén listos
     private void fetchUsersAndShowDialog() {
         UserApi api = ApiClient.getClient().create(UserApi.class);
         api.getAllUsers().enqueue(new Callback<List<User>>() {
@@ -117,7 +141,7 @@ public class TasksFragment extends Fragment {
                     userList.clear();
                     userList.addAll(response.body());
                     adapter.updateUserList(userList);
-                    showAddTaskDialog();
+                    showAddTaskDialog(); // Muestra el diálogo después de cargar usuarios
                 } else {
                     showToast("Error al cargar usuarios");
                 }
@@ -129,7 +153,7 @@ public class TasksFragment extends Fragment {
         });
     }
 
-    // Carga usuarios y actualiza el adapter (para edición y creación)
+    // Carga los usuarios y actualiza el adaptador (para edición y creación de tareas)
     private void fetchUsers() {
         UserApi api = ApiClient.getClient().create(UserApi.class);
         api.getAllUsers().enqueue(new Callback<List<User>>() {
@@ -148,7 +172,7 @@ public class TasksFragment extends Fragment {
         });
     }
 
-    // Infla el menú y guarda la referencia al ítem de filtro
+    // Infla el menú de opciones y guarda la referencia al ítem de filtro
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.toolbar_menu, menu);
@@ -156,21 +180,22 @@ public class TasksFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-    // Maneja la selección del ítem de filtro
+    // Maneja la selección de opciones del menú (por ejemplo, el filtro)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.menu_filter) {
             View anchor = requireActivity().findViewById(R.id.toolbar);
-            showFilterPopup(anchor);
+            showFilterPopup(anchor); // Muestra el menú de filtro
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    // Muestra el menú de filtro alineado a la derecha
+    // Muestra un menú contextual para filtrar las tareas por estado
     private void showFilterPopup(View anchorView) {
         PopupMenu popup = new PopupMenu(requireContext(), anchorView);
         popup.setGravity(Gravity.END);
+        // Añade las opciones de filtro
         popup.getMenu().add("Todos");
         popup.getMenu().add("Pendiente");
         popup.getMenu().add("Completado");
@@ -182,12 +207,13 @@ public class TasksFragment extends Fragment {
         popup.show();
     }
 
-    // Filtra las tareas por estado y actualiza el icono del filtro
+    // Filtra la lista de tareas por el estado seleccionado y actualiza el icono del filtro
     private void filterTasksByStatus(String status) {
         currentFilter = status;
         if (menuFilterItem != null) {
             menuFilterItem.setIcon(!status.equals("Todos") ? R.drawable.ic_filter_list_active : R.drawable.ic_filter_list_default);
         }
+        // Filtra la lista de tareas según el estado seleccionado
         List<Task> filteredTasks = status.equals("Todos")
                 ? new ArrayList<>(taskList)
                 : taskList.stream().filter(task -> task.getStatus().equals(status)).collect(Collectors.toList());
@@ -203,7 +229,7 @@ public class TasksFragment extends Fragment {
         EditText input = dialogView.findViewById(R.id.et_task_description);
         Spinner spinner = dialogView.findViewById(R.id.spinner_users);
 
-        // Prepara la lista de nombres de usuario
+        // Prepara la lista de nombres de usuario para el Spinner
         List<String> userNames = new ArrayList<>();
         userNames.add("Sin asignar"); // Opción por defecto
         for (User user : userList) userNames.add(user.getuserName());
@@ -217,6 +243,7 @@ public class TasksFragment extends Fragment {
         builder.setPositiveButton("Guardar", (dialog, which) -> {
             String taskDescription = input.getText().toString().trim();
             int selectedPosition = spinner.getSelectedItemPosition();
+            // Si selecciona un usuario, obtiene su id y nombre; si no, deja null
             Long assignedUserId = (selectedPosition > 0) ? userList.get(selectedPosition - 1).getUserId() : null;
             String assignedUserName = (selectedPosition > 0) ? userList.get(selectedPosition - 1).getuserName() : null;
 
@@ -230,7 +257,7 @@ public class TasksFragment extends Fragment {
         builder.show();
     }
 
-    // Ordena las tareas por estado: Pending > Done > Deleted
+    // Ordena la lista de tareas por estado: Pendiente > Completado > Eliminado
     private void sortTasksByStatus() {
         taskList.sort((task1, task2) -> {
             if (task1.getStatus().equals("Pendiente") && !task2.getStatus().equals("Pendiente")) return -1;
@@ -240,7 +267,7 @@ public class TasksFragment extends Fragment {
         });
     }
 
-    // Crea una nueva tarea y la añade a la lista
+    // Crea una nueva tarea y la añade usando la API
     private void createNewTask(String description, Long assignedUserId, String assignedUserName) {
         TaskApi api = ApiClient.getClient().create(TaskApi.class);
         Task newTask = new Task();
@@ -254,7 +281,7 @@ public class TasksFragment extends Fragment {
             @Override
             public void onResponse(Call<Task> call, Response<Task> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    fetchTasks();
+                    fetchTasks(); // Recarga la lista de tareas
                     showToast("Tarea creada");
                 } else {
                     showToast("Error al crear tarea");
@@ -278,7 +305,7 @@ public class TasksFragment extends Fragment {
                     taskList.addAll(response.body());
                     sortTasksByStatus();
                     adapter.updateData(new ArrayList<>(taskList));
-                    filterTasksByStatus(currentFilter);
+                    filterTasksByStatus(currentFilter); // Aplica el filtro actual
                 } else {
                     showToast("Error al cargar tareas");
                 }
@@ -290,7 +317,7 @@ public class TasksFragment extends Fragment {
         });
     }
 
-    // Actualiza el estado de una tarea y refresca la lista
+    // Actualiza el estado o descripción de una tarea y refresca la lista
     private void updateTaskStatusAndRefresh(Task task, String newStatus, String successMsg, String errorMsg) {
         TaskApi api = ApiClient.getClient().create(TaskApi.class);
         task.setStatus(newStatus);
@@ -298,7 +325,7 @@ public class TasksFragment extends Fragment {
             @Override
             public void onResponse(Call<Task> call, Response<Task> response) {
                 if (response.isSuccessful()) {
-                    fetchTasks();
+                    fetchTasks(); // Recarga la lista tras la actualización
                     showToast(successMsg);
                 } else {
                     showToast(errorMsg);
@@ -311,7 +338,7 @@ public class TasksFragment extends Fragment {
         });
     }
 
-    // Muestra un Toast con el mensaje proporcionado
+    // Muestra un mensaje Toast en pantalla
     private void showToast(String message) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
     }

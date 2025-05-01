@@ -11,9 +11,7 @@ public class Task {
     private String assignedUserName;
 
     // Getters and setters
-    public Long getTaskId() {
-        return taskId;
-    }
+    public Long getTaskId() { return taskId; }
 
     public String getDescription() {
         return description;

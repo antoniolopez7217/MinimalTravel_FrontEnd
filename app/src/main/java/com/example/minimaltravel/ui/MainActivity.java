@@ -42,9 +42,9 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_transactions) {
                 fragment = new TransactionsFragment();
                 title = "Transacciones";
-            } else if (itemId == R.id.nav_debts) {
-                fragment = new DebtsFragment();
-                title = "Deudas";
+            } else if (itemId == R.id.nav_balances) {
+                fragment = new BalancesFragment();
+                title = "Balances";
             }
 
             if (fragment != null) {

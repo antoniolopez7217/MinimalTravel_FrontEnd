@@ -53,7 +53,7 @@
             <ImageButton
                 android:id="@+id/button_more_options"
                 android:layout_width="wrap_content"
-                android:layout_height="48dp"
+                android:layout_height="match_parent"
                 android:src="@drawable/ic_more_vert"
                 android:background="@android:color/transparent"
                 android:contentDescription="Más opciones"/>
@@ -61,7 +61,7 @@
             <ImageButton
                 android:id="@+id/button_action_task"
                 android:layout_width="wrap_content"
-                android:layout_height="48dp"
+                android:layout_height="match_parent"
                 android:src="@drawable/ic_delete"
                 android:background="@android:color/transparent"
                 android:contentDescription="Borrar tarea"
