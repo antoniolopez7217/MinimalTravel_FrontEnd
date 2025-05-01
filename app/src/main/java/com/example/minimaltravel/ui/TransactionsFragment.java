@@ -29,10 +29,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -79,11 +79,10 @@ public class TransactionsFragment extends Fragment {
                 deleteTransaction(transaction);
             }
 
-//            @Override
-//            public void onUserUpdate(User user, String newUsername, String newEmail) {
-//                // Llama a la función para actualizar el usuario con los nuevos datos
-//                updateUser(user, newUsername, newEmail);
-//            }
+            @Override
+            public void onTransactionEdit(Transaction transaction) {
+                fetchUsersAndShowDialog(transaction);
+            }
         });
         recyclerViewTransactions.setAdapter(adapter);
     }
@@ -94,6 +93,10 @@ public class TransactionsFragment extends Fragment {
     }
 
     private void fetchUsersAndShowDialog() {
+        fetchUsersAndShowDialog(null);
+    }
+
+    private void fetchUsersAndShowDialog(@Nullable Transaction transactionToEdit) {
         UserApi api = ApiClient.getClient().create(UserApi.class);
         api.getAllUsers().enqueue(new Callback<List<User>>() {
             @Override
@@ -101,7 +104,7 @@ public class TransactionsFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     userList.clear();
                     userList.addAll(response.body());
-                    showAddTransactionDialog(); // Solo muestra el diálogo cuando userList ya está llena
+                    showAddTransactionDialog(transactionToEdit); // Puede ser null (nuevo) o transacción (editar)
                 } else {
                     showToast("Error al cargar usuarios");
                 }
@@ -157,11 +160,12 @@ public class TransactionsFragment extends Fragment {
         });
     }
 
-    private void showAddTransactionDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Nuevo gasto");
+    private void showAddTransactionDialog(@Nullable Transaction transactionToEdit) {
+        boolean isEdit = transactionToEdit != null;
 
-        // Infla el layout personalizado
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle(isEdit ? "Editar gasto" : "Nuevo gasto");
+
         View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_transaction, null);
         builder.setView(dialogView);
 
@@ -173,7 +177,17 @@ public class TransactionsFragment extends Fragment {
         LinearLayout layoutParticipants = dialogView.findViewById(R.id.layout_participants_checkboxes);
 
         // --- 1. Rellenar spinner de categorías (ejemplo) ---
-        String[] categories = {"🍔 Comida", "🚌 Transporte", "🎉 Ocio","🎬 Cultura","👕 Ropa","🏨 Alojamiento", "🛒 Compras", "🏕️ Actividades", "🧩 Otros"};
+        String[] categories = {
+                "🏕️ Actividades",
+                "🏨 Alojamiento",
+                "🍔 Comida",
+                "🛒 Compras",
+                "🎬 Cultura",
+                "🎉 Ocio",
+                "👕 Ropa",
+                "🚌 Transporte",
+                "🧩 Otros"
+        };
         ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, categories);
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCategory.setAdapter(categoryAdapter);
@@ -194,15 +208,46 @@ public class TransactionsFragment extends Fragment {
             layoutParticipants.addView(checkBox);
         }
 
-        // --- 4. Configurar el botón Guardar ---
-        builder.setPositiveButton("Guardar", (dialog, which) -> {
+        // Precargar datos si es edición
+        if (isEdit) {
+            etDescription.setText(transactionToEdit.getDescription());
+            etAmount.setText(String.valueOf(transactionToEdit.getAmount()));
+
+            // Seleccionar categoría
+            String cleanCategory = transactionToEdit.getCategory();
+            for (int i = 0; i < categories.length; i++) {
+                if (categories[i].replaceAll("^[^a-zA-Z]+\\s*", "").equals(cleanCategory)) {
+                    spinnerCategory.setSelection(i);
+                    break;
+                }
+            }
+
+            // Seleccionar pagador
+            for (int i = 0; i < userList.size(); i++) {
+                if (userList.get(i).getUserId().equals(transactionToEdit.getCreditorUserId())) {
+                    spinnerCreditor.setSelection(i);
+                    break;
+                }
+            }
+
+            // Marcar participantes
+            List<Long> participantIds = new ArrayList<>();
+            for (Transaction.Participant p : transactionToEdit.getParticipants()) {
+                participantIds.add(p.getUserId());
+            }
+            for (int i = 0; i < layoutParticipants.getChildCount(); i++) {
+                CheckBox cb = (CheckBox) layoutParticipants.getChildAt(i);
+                cb.setChecked(participantIds.contains(cb.getTag()));
+            }
+        }
+
+        builder.setPositiveButton(isEdit ? "Actualizar" : "Guardar", (dialog, which) -> {
             String description = etDescription.getText().toString().trim();
             String amountStr = etAmount.getText().toString().trim();
             String category = spinnerCategory.getSelectedItem().toString();
             int creditorPosition = spinnerCreditor.getSelectedItemPosition();
             Long creditorUserId = userList.get(creditorPosition).getUserId();
 
-            // Recoger participantes seleccionados
             List<Long> selectedUserIds = new ArrayList<>();
             for (int i = 0; i < layoutParticipants.getChildCount(); i++) {
                 View child = layoutParticipants.getChildAt(i);
@@ -223,20 +268,29 @@ public class TransactionsFragment extends Fragment {
             try {
                 double amount = Double.parseDouble(amountStr);
 
-                // Validación: el importe debe ser positivo
                 if (amount <= 0) {
                     showToast("El importe debe ser mayor que cero");
                     return;
                 }
 
-                // Llamar al método createNewTransaction
-                createNewTransaction(
-                        description,
-                        amount,
-                        category.replaceAll("^[^a-zA-ZáéíóúÁÉÍÓÚñÑ]+\\s*", ""),
-                        creditorUserId,
-                        selectedUserIds
-                );
+                if (isEdit) {
+                    updateTransaction(
+                            transactionToEdit.getTransactionId(),
+                            description,
+                            amount,
+                            category.replaceAll("^[^a-zA-ZáéíóúÁÉÍÓÚñÑ]+\\s*", ""),
+                            creditorUserId,
+                            selectedUserIds
+                    );
+                } else {
+                    createNewTransaction(
+                            description,
+                            amount,
+                            category.replaceAll("^[^a-zA-ZáéíóúÁÉÍÓÚñÑ]+\\s*", ""),
+                            creditorUserId,
+                            selectedUserIds
+                    );
+                }
 
             } catch (NumberFormatException e) {
                 showToast("Formato de importe inválido");
@@ -245,6 +299,45 @@ public class TransactionsFragment extends Fragment {
 
         builder.setNegativeButton("Cancelar", null);
         builder.show();
+    }
+
+    private void updateTransaction(Long transactionId, String description, double amount,
+                                   String category, Long creditorUserId, List<Long> participantUserIds) {
+        double amountPerParticipant = amount / participantUserIds.size();
+
+        List<Transaction.Participant> participants = new ArrayList<>();
+        for (Long userId : participantUserIds) {
+            Transaction.Participant participant = new Transaction.Participant();
+            participant.setUserId(userId);
+            participant.setAmount(amountPerParticipant);
+            participants.add(participant);
+        }
+
+        Transaction transactionRequest = new Transaction();
+        transactionRequest.setDescription(description);
+        transactionRequest.setAmount(amount);
+        transactionRequest.setCategory(category);
+        transactionRequest.setCreditorUserId(creditorUserId);
+        transactionRequest.setParticipants(participants);
+        transactionRequest.setCreationDate(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
+
+        TransactionApi api = ApiClient.getClient().create(TransactionApi.class);
+        api.updateTransaction(transactionId, transactionRequest).enqueue(new Callback<Transaction>() {
+            @Override
+            public void onResponse(Call<Transaction> call, Response<Transaction> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    showToast("Gasto actualizado exitosamente");
+                    fetchTransactions();
+                } else {
+                    showToast("Error al actualizar gasto");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Transaction> call, Throwable t) {
+                showToast("Error de conexión");
+            }
+        });
     }
 
     private void fetchTransactions() {
@@ -256,6 +349,12 @@ public class TransactionsFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     transactionList.clear();
                     transactionList.addAll(response.body());
+
+                    // Ordenar de más nueva a más antigua
+                    Collections.sort(transactionList, (t1, t2) -> {
+                        return t2.getCreationDate().compareTo(t1.getCreationDate());
+                    });
+
                     adapter.updateData(new ArrayList<>(transactionList));
                 } else {
                     showToast("Error al cargar gastos");

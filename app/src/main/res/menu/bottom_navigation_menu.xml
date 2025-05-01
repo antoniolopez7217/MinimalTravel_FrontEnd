@@ -1,16 +1,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/nav_tasks"
-        android:title="Tareas"
-        android:icon="@drawable/ic_tasks" />
-    <item
         android:id="@+id/nav_transactions"
-        android:title="Transacciones"
+        android:title="Gastos"
         android:icon="@drawable/ic_transactions" />
     <item
         android:id="@+id/nav_balances"
         android:title="Balances"
         android:icon="@drawable/ic_balances" />
+    <item
+        android:id="@+id/nav_tasks"
+        android:title="Tareas"
+        android:icon="@drawable/ic_tasks" />
     <item
         android:id="@+id/nav_users"
         android:title="Usuarios"

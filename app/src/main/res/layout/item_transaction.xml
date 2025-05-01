@@ -68,19 +68,11 @@
             <ImageButton
                 android:id="@+id/button_more_options"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
                 android:contentDescription="Más opciones"
                 android:src="@drawable/ic_more_vert" />
 
-            <ImageButton
-                android:id="@+id/button_action_transaction"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_delete"
-                android:background="@android:color/transparent"
-                android:contentDescription="Borrar gasto"
-                android:paddingStart="8dp"/>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

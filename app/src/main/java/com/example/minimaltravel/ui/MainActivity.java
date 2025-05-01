@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Cargar fragmento inicial
         if (savedInstanceState == null) {
-            loadFragment(new TasksFragment(), "Tareas");
+            loadFragment(new TransactionsFragment(), "Gastos");
         }
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
                 title = "Usuarios";
             } else if (itemId == R.id.nav_transactions) {
                 fragment = new TransactionsFragment();
-                title = "Transacciones";
+                title = "Gastos";
             } else if (itemId == R.id.nav_balances) {
                 fragment = new BalancesFragment();
                 title = "Balances";

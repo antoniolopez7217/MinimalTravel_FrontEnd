@@ -63,30 +63,27 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         holder.buttonMoreOptions.setOnClickListener(v ->
                 showPopupMenu(v, user, position));
 
-        // Configurar clic en el botón de acción principal (eliminar)
-        holder.buttonAction.setOnClickListener(v -> {
-            // Diálogo de confirmación para eliminar usuario
-            new AlertDialog.Builder(v.getContext())
-                    .setTitle("Confirmar eliminación")
-                    .setMessage("¿Estás seguro de que quieres eliminar al usuario \"" + user.getuserName() + "\"?")
-                    .setNegativeButton("No", null)
-                    .setPositiveButton("Sí", (dialog, which) -> {
-                        if (actionListener != null) {
-                            actionListener.onUserDelete(user); // Notificar acción de eliminación
-                        }
-                    })
-                    .show();
-        });
     }
 
     // Muestra el menú contextual con opciones para el usuario
     private void showPopupMenu(View view, User user, int position) {
         PopupMenu popup = new PopupMenu(view.getContext(), view);
-        popup.inflate(R.menu.user_options_menu); // Inflar menú desde recursos XML
+        popup.inflate(R.menu.options_menu); // Inflar menú desde recursos XML
         popup.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.menu_edit_username) {
+            if (item.getItemId() == R.id.menu_edit) {
                 showEditDialog(view.getContext(), user, position);
                 return true;
+            } else if (item.getItemId() == R.id.menu_delete) {
+                new AlertDialog.Builder(view.getContext())
+                        .setTitle("Confirmar eliminación")
+                        .setMessage("¿Estás seguro de que quieres eliminar al usuario \"" + user.getuserName() + "\"?")
+                        .setNegativeButton("No", null)
+                        .setPositiveButton("Sí", (dialog, which) -> {
+                            if (actionListener != null) {
+                                actionListener.onUserDelete(user); // Notificar acción de eliminación
+                            }
+                        })
+                    .show();
             }
             return false;
         });
@@ -141,14 +138,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     // ViewHolder que contiene las vistas de cada item de usuario
     static class UserViewHolder extends RecyclerView.ViewHolder {
         TextView textUserName, textUserMail;
-        ImageButton buttonAction, buttonMoreOptions;
+        ImageButton buttonMoreOptions;
 
         public UserViewHolder(@NonNull View itemView) {
             super(itemView);
             // Enlazar vistas del layout
             textUserName = itemView.findViewById(R.id.text_user_username);
             textUserMail = itemView.findViewById(R.id.text_user_mail);
-            buttonAction = itemView.findViewById(R.id.button_action_user);
             buttonMoreOptions = itemView.findViewById(R.id.button_more_options);
         }
     }

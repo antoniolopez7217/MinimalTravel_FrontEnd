@@ -38,13 +38,13 @@
                     android:id="@+id/text_task_description"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="16sp"/>
+                    android:textSize="20sp"/>
 
                 <TextView
                     android:id="@+id/text_task_user"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="italic"
                     android:paddingTop="4dp"/>
             </LinearLayout>

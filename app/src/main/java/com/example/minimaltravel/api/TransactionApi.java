@@ -1,6 +1,8 @@
 package com.example.minimaltravel.api;
 
 import com.example.minimaltravel.model.Transaction;
+import com.example.minimaltravel.model.User;
+
 import java.util.List;
 
 import retrofit2.Call;
@@ -8,6 +10,7 @@ import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface TransactionApi {
@@ -23,6 +26,9 @@ public interface TransactionApi {
     // Obtener transacción por ID
     @GET("transactions/{id}")
     Call<Transaction> getTransactionById(@Path("id") Long id);
+
+    @PUT("transactions/{id}")
+    Call<Transaction> updateTransaction(@Path("id") Long id, @Body Transaction transaction);
 
     // Eliminar transacción
     @DELETE("transactions/{id}")

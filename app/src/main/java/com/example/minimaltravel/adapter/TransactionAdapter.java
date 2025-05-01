@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -24,6 +25,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
     public interface TransactionActionListener {
         void onTransactionDelete(Transaction transactions);
+        void onTransactionEdit(Transaction transaction);
     }
 
     public TransactionAdapter(List<Transaction> transactions, TransactionAdapter.TransactionActionListener actionListener) {
@@ -48,14 +50,14 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                 new Object() {
                     String withIcon(String category) {
                         switch (category) {
+                            case "Actividades": return "🏕️ Actividades";
+                            case "Alojamiento": return "🏨 Alojamiento";
                             case "Comida": return "🍔 Comida";
-                            case "Transporte": return "🚌 Transporte";
+                            case "Compras": return "🛒 Compras";
+                            case "Cultura": return "🎬 Cultura";
                             case "Ocio": return "🎉 Ocio";
                             case "Ropa": return "👕 Ropa";
-                            case "Cultura": return "🎬 Cultura";
-                            case "Alojamiento": return "🏨 Alojamiento";
-                            case "Compras": return "🛒 Compras";
-                            case "Actividades": return "🏕️ Actividades";
+                            case "Transporte": return "🚌 Transporte";
                             case "Otros": return "🧩 Otros";
                             default: return category;
                         }
@@ -80,21 +82,29 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         holder.textTransactionParticipants.setText(message);
         holder.textTransactionAmounts.setText(String.format("%s€  ", transaction.getAmount()));
 
-        // Configurar clic en el botón de opciones (menú contextual)
-       // holder.buttonMoreOptions.setOnClickListener(v ->
-        //        showPopupMenu(v, user, position));
-
-        holder.buttonAction.setOnClickListener(v -> {
-            new AlertDialog.Builder(v.getContext())
-                    .setTitle("Confirmar eliminación")
-                    .setMessage("¿Estás seguro de que quieres eliminar el gasto ?")
-                    .setNegativeButton("No", null)
-                    .setPositiveButton("Sí", (dialog, which) -> {
-                        if (actionListener != null) {
-                            actionListener.onTransactionDelete(transaction);
-                        }
-                    })
-                    .show();
+        holder.buttonMoreOptions.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(v.getContext(), v);
+            popup.inflate(R.menu.options_menu);
+            popup.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.menu_edit) {
+                    actionListener.onTransactionEdit(transaction);
+                    return true;
+                } else if (item.getItemId() == R.id.menu_delete) {
+                    new AlertDialog.Builder(v.getContext())
+                            .setTitle("Confirmar eliminación")
+                            .setMessage("¿Estás seguro de que quieres eliminar el gasto?")
+                            .setNegativeButton("No", null)
+                            .setPositiveButton("Sí", (dialog, which) -> {
+                                if (actionListener != null) {
+                                    actionListener.onTransactionDelete(transaction);
+                                }
+                            })
+                            .show();
+                    return true;
+                }
+                return false;
+            });
+            popup.show();
         });
     }
 
@@ -110,7 +120,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
     static class TransactionViewHolder extends RecyclerView.ViewHolder {
         TextView textTransactionDescription, textTransactionCreditor, textTransactionCategory, textTransactionParticipants, textTransactionAmounts;
-        ImageButton buttonAction, buttonMoreOptions;
+        ImageButton buttonMoreOptions;
 
         public TransactionViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -120,7 +130,6 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             textTransactionCreditor = itemView.findViewById(R.id.text_transaction_creditor);
             textTransactionParticipants = itemView.findViewById(R.id.text_transaction_participants);
             textTransactionAmounts = itemView.findViewById(R.id.text_transaction_amount);
-            buttonAction = itemView.findViewById(R.id.button_action_transaction);
             buttonMoreOptions = itemView.findViewById(R.id.button_more_options);
         }
     }
