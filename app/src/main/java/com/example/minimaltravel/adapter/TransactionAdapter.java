@@ -1,6 +1,7 @@
 package com.example.minimaltravel.adapter;
 
 import android.app.AlertDialog;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.minimaltravel.R;
@@ -46,6 +48,12 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         Transaction transaction = transactions.get(position);
 
         holder.textTransactionDescription.setText(transaction.getDescription());
+        if (holder.cardTransaction != null) {
+            if ("Liquidación deudas".equals(transaction.getCategory())) {
+                holder.cardTransaction.setCardBackgroundColor(Color.parseColor("#AFDFE0"));
+            }
+        }
+
         holder.textTransactionCategory.setText(
                 new Object() {
                     String withIcon(String category) {
@@ -55,6 +63,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                             case "Comida": return "🍔 Comida";
                             case "Compras": return "🛒 Compras";
                             case "Cultura": return "🎬 Cultura";
+                            case "Liquidación deudas": return "💰 Liquidación deudas";
                             case "Ocio": return "🎉 Ocio";
                             case "Ropa": return "👕 Ropa";
                             case "Transporte": return "🚌 Transporte";
@@ -121,6 +130,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
     static class TransactionViewHolder extends RecyclerView.ViewHolder {
         TextView textTransactionDescription, textTransactionCreditor, textTransactionCategory, textTransactionParticipants, textTransactionAmounts;
         ImageButton buttonMoreOptions;
+        CardView cardTransaction;
 
         public TransactionViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -131,6 +141,7 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             textTransactionParticipants = itemView.findViewById(R.id.text_transaction_participants);
             textTransactionAmounts = itemView.findViewById(R.id.text_transaction_amount);
             buttonMoreOptions = itemView.findViewById(R.id.button_more_options);
+            cardTransaction = itemView.findViewById(R.id.card_transaction);
         }
     }
 }

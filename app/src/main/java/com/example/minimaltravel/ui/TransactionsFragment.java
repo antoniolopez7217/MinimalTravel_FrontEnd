@@ -183,6 +183,7 @@ public class TransactionsFragment extends Fragment {
                 "🍔 Comida",
                 "🛒 Compras",
                 "🎬 Cultura",
+                "💰 Liquidación deudas",
                 "🎉 Ocio",
                 "👕 Ropa",
                 "🚌 Transporte",

@@ -23,7 +23,6 @@ public class Transaction {
         public void setUserId(Long userId) { this.userId = userId; }
 
         public String getUserName() { return userName; }
-        public void setUserName(String userName) { this.userName = userName; }
 
         public Double getAmount() { return amount; }
         public void setAmount(Double amount) { this.amount = amount; }
@@ -31,7 +30,6 @@ public class Transaction {
 
     // Getters y setters para Transaction
     public Long getTransactionId() { return transactionId; }
-    public void setTransactionId(Long transactionId) { this.transactionId = transactionId; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
@@ -49,7 +47,6 @@ public class Transaction {
     public void setCreditorUserId(Long creditorUserId) { this.creditorUserId = creditorUserId; }
 
     public String getCreditorUserName() { return creditorUserName; }
-    public void setCreditorUserName(String creditorUserName) { this.creditorUserName = creditorUserName; }
 
     public List<Participant> getParticipants() { return participants; }
     public void setParticipants(List<Participant> participants) { this.participants = participants; }

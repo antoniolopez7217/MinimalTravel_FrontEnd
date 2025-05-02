@@ -45,8 +45,6 @@ public class UsersFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Permite que el fragmento tenga su propio menú de opciones (si lo necesitas)
-        setHasOptionsMenu(true);
     }
 
     @Nullable
