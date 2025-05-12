@@ -56,7 +56,15 @@ public class BalanceAdapter extends RecyclerView.Adapter<BalanceAdapter.BalanceV
                         Html.FROM_HTML_MODE_LEGACY
                 )
         );
-        holder.textBalanceAmount.setText(String.format("%s€  ", balance.getAmount()));
+
+        double amount = balance.getAmount();
+        String amountText;
+        if (amount == (long) amount) {
+            amountText = String.format("%d€  ", (long) amount);
+        } else {
+            amountText = String.format("%.2f€  ", amount);
+        }
+        holder.textBalanceAmount.setText(amountText);
 
         holder.buttonMoreOptions.setOnClickListener(v ->
                 showPopupMenu(v, balance, position));

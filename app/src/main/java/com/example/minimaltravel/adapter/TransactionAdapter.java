@@ -89,7 +89,15 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         String participantNamesString = String.join(", ", participantNames);
         String message = "Participantes: " + participantNamesString;
         holder.textTransactionParticipants.setText(message);
-        holder.textTransactionAmounts.setText(String.format("%s€  ", transaction.getAmount()));
+
+        double amount = transaction.getAmount();
+        String amountText;
+        if (amount == (long) amount) {
+            amountText = String.format("%d€  ", (long) amount);
+        } else {
+            amountText = String.format("%.2f€  ", amount);
+        }
+        holder.textTransactionAmounts.setText(amountText);
 
         holder.buttonMoreOptions.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(v.getContext(), v);
