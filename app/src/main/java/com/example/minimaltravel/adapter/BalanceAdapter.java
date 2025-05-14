@@ -83,8 +83,7 @@ public class BalanceAdapter extends RecyclerView.Adapter<BalanceAdapter.BalanceV
                                 + " con "
                                 + balance.getCreditorUserName()
                                 + " ("
-                                + balance.getAmount()
-                                + "€)?"
+                                + String.format("%.2f€)?", balance.getAmount())
                         )
                         .setNegativeButton("No", null)
                         .setPositiveButton("Sí", (dialog, which) -> {
