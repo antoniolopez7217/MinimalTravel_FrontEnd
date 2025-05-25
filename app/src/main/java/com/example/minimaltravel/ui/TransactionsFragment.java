@@ -176,7 +176,7 @@ public class TransactionsFragment extends Fragment {
         Spinner spinnerCreditor = dialogView.findViewById(R.id.spinner_creditor_user);
         LinearLayout layoutParticipants = dialogView.findViewById(R.id.layout_participants_checkboxes);
 
-        // --- 1. Rellenar spinner de categorías (ejemplo) ---
+        // --- 1. Rellenar spinner de categorías ---
         String[] categories = {
                 "🏕️ Actividades",
                 "🏨 Alojamiento",

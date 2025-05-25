@@ -17,7 +17,6 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.minimaltravel.R;
@@ -34,7 +33,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     // Listener para manejar acciones sobre las tareas (borrar, deshacer, cambiar estado, etc.)
     private TaskActionListener actionListener;
     // Lista de usuarios, usada para el spinner al editar una tarea
-    private List<User> userList; // NUEVO: lista de usuarios para el spinner
+    private List<User> userList;
 
     // Interfaz para definir las acciones que se pueden realizar sobre una tarea
     public interface TaskActionListener {
@@ -218,7 +217,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         notifyDataSetChanged();
     }
 
-    // Permite actualizar la lista de usuarios (por ejemplo, si cambian los usuarios disponibles)
+    // Permite actualizar la lista de usuarios
     public void updateUserList(List<User> newUsers) {
         this.userList = newUsers != null ? newUsers : new ArrayList<>();
         notifyDataSetChanged();

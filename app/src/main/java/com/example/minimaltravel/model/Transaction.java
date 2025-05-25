@@ -6,7 +6,7 @@ public class Transaction {
     private Long transactionId;
     private String description;
     private Double amount;
-    private String category; // Puedes usar String o el mismo Enum si lo tienes en el frontend
+    private String category;
     private String creationDate;
     private Long creditorUserId;
     private String creditorUserName;

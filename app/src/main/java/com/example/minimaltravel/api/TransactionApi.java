@@ -1,7 +1,6 @@
 package com.example.minimaltravel.api;
 
 import com.example.minimaltravel.model.Transaction;
-import com.example.minimaltravel.model.User;
 
 import java.util.List;
 

@@ -10,12 +10,10 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.minimaltravel.R;
 import com.example.minimaltravel.model.Balance;
-import com.example.minimaltravel.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
